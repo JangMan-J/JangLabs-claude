@@ -52,12 +52,15 @@ verdict `2026-05-11-...-comparison.md`). Phase 0 (tag the corpus + `_tags.md` vo
   descriptions; search reads `_memory_catalog.json`, not memory bodies.
 - `_review_game.py` (Memory Roulette) must keep working unchanged; new engine mirrors its nested-metadata
   layout + field order, and additionally reads block-list `tags:` (a `_review_game.py` blind spot).
-- **install.sh blocker:** the current settings-merge dedupes hooks by `.hooks[0].command` at matcher-BLOCK
-  granularity → adding a hook INTO an existing matcher block is a silent no-op. MUST patch to per-hook-
-  command merge within `(event,matcher)` BEFORE registering Phase-1/3 hooks.
-- `install.sh` step 1b symlinks `claude/memory/*` into the store — EXCLUDE generated files
-  (`_memory_catalog.json`, `_memory_surface_config.json`); only `_review_game.py`, `_tags.md`,
-  `_tag_links.md` are lab-sourced.
+- **install.sh blocker — RESOLVED (2026-06-02).** The installer was ported to a single Python CLI
+  `claude/agent-harness.py` (`install`/`remove`/`status`, dry-run default; supersedes install.sh+uninstall.sh).
+  The settings-merge now reconciles at per-hook-command granularity within `(event,matcher)` — a hook can be
+  added INTO an existing matcher block; a command already present in the event is never duplicated. Verified:
+  old jq merge dropped 2 hooks added into the existing Edit|Write|MultiEdit block, new merge adds them. So
+  Phase-1/3 hooks can now be registered directly into existing matcher blocks.
+- `agent-harness.py` step 1b symlinks `claude/memory/*` into the store — EXCLUDES generated files
+  (`_memory_catalog.json`, `_memory_surface_config.json`, plus dotfiles); only `_review_game.py`, `_tags.md`,
+  `_tag_links.md` are lab-sourced. (Implemented in the port.)
 
 ## File manifest + status
 **Phase 1 — engine + write-time validation** (deploy = build-but-leave-off; write-guard is the only blocker)
@@ -74,7 +77,8 @@ verdict `2026-05-11-...-comparison.md`). Phase 0 (tag the corpus + `_tags.md` vo
   new_string tags else FAIL OPEN; taxonomy edits validate+deny-on-error, allow bootstrap.
 - [TODO] `claude/hooks/memory-catalog-refresh.sh` — PostToolUse Edit|Write|MultiEdit; cheap-gate; run
   `rebuild`; on post-write invalid taxonomy emit top-level `{"decision":"block","reason":...}`.
-- [TODO] `claude/install.sh` — per-hook-command merge fix; exclude generated store files from 1b.
+- [DONE] `claude/agent-harness.py` (replaces install.sh+uninstall.sh) — per-hook-command merge fix +
+  generated-file exclusion from 1b. Parity-verified vs old bash; merge fix demonstrated.
 - [TODO] `claude/settings.global.fragment.json` — add the 3 write-side hooks into existing
   Edit|Write|MultiEdit (Pre) + new PostToolUse Edit|Write|MultiEdit entries.
 - [TODO] `claude/tests/memory_surface/test_phase1.py` — round-trip (all live mem), block-list tags,

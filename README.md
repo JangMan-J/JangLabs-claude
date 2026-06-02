@@ -25,23 +25,28 @@ A CLAUDE.md fragment adds: a verify-before-act rule, a memory-consultation rule,
 - No MCP servers added.
 - No skills pre-created. Skills should crystallize from observed Nth-session patterns, not anticipated ones.
 
-## Install
+## Install / uninstall
+
+One CLI, `agent-harness.py` (Python 3, no `jq` dependency). Dry-run by default; pass
+`--apply` to commit.
 
 ```sh
-./install.sh                 # dry-run: shows what would change
-./install.sh --apply         # commit
+./agent-harness.py status            # what's currently installed (read-only)
+./agent-harness.py install           # dry-run: shows what would change
+./agent-harness.py install --apply   # commit
+./agent-harness.py remove            # dry-run uninstall
+./agent-harness.py remove --apply    # commit uninstall
 ```
 
-Idempotent. Backups land in `claude/.install-backups/<ts>/`. Restart Claude Code (or run `/reload-plugins`) afterward.
+Idempotent. `remove` reverses exactly what `install` adds — the symlinks, the CLAUDE.md
+fragment block, and the hook entries in `settings.json` — and touches no permissions.
+Backups land in `claude/.install-backups/<ts>/` (and `.uninstall-backups/<ts>/`). Restart
+Claude Code (or run `/reload-plugins`) after applying.
 
-## Uninstall
-
-```sh
-./uninstall.sh               # dry-run
-./uninstall.sh --apply       # commit
-```
-
-Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `settings.json` — symmetric with install (removes exactly what it adds). Touches no permissions.
+The settings merge is per-hook-command within each `(event, matcher)`: a hook can be
+added into an existing matcher block, and a command already registered is never
+duplicated. Only the `hooks` block of `settings.json` is ever touched — `permissions`
+stays the user's.
 
 ## Files
 
@@ -56,12 +61,12 @@ Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `s
 | `hooks/memory-review-offer.sh` | UserPromptSubmit — offer a Memory Roulette round for an overdue memory, ≤1×/day |
 | `CLAUDE.md.fragment` | Appended to `~/.claude/CLAUDE.md` between sentinels |
 | `settings.global.fragment.json` | Merged into `~/.claude/settings.json` (hooks only) |
-| `memory/_review_game.py` | Memory Roulette engine; symlinked into the box-brain memory store by install.sh (self-locates its store from `$HOME`) |
-| `install.sh`, `uninstall.sh` | Idempotent dry-run-by-default |
+| `memory/_review_game.py` | Memory Roulette engine; symlinked into the box-brain memory store by agent-harness.py (self-locates its store from `$HOME`) |
+| `agent-harness.py` | Idempotent install / remove / status CLI (dry-run by default; supersedes the former `install.sh`+`uninstall.sh`) |
 
 ## Iteration
 
-Edit the source under `claude/hooks/` directly — the symlinks point here, so changes are live. Re-run `install.sh --apply` only when changing the CLAUDE.md fragment or settings.json shape.
+Edit the source under `claude/hooks/` directly — the symlinks point here, so changes are live. Re-run `./agent-harness.py install --apply` only when changing the CLAUDE.md fragment or settings.json shape.
 
 ## Known limitations
 

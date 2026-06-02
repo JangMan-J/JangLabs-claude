@@ -1,5 +1,5 @@
 {
-  "_comment": "Merged into ~/.claude/settings.json by claude/install.sh — hooks only; permissions are never touched. Existing keys are preserved; hook entries that aren't already registered are added. Hook command dirs use the literal 'HOOKS_DIR/' placeholder; install.sh rewrites each to $HOME/.claude/hooks at install time, so this fragment is host-agnostic. NOTE: install.sh dedups hook GROUPS by their FIRST command, so each distinct hook you want guaranteed-installed must live in its OWN group object (a hook buried as a non-first entry in an existing group is skipped on boxes that already have that group). That's why lab-scope.sh sits in a separate UserPromptSubmit group.",
+  "_comment": "Merged into ~/.claude/settings.json by claude/agent-harness.py (install subcommand) — hooks only; permissions (allow/deny, defaultMode, bypass flags) are NEVER touched. Existing keys are preserved; each hook command not already registered is added at per-command granularity within its (event, matcher) block, so a hook can be added INTO an existing matcher block and a command already present anywhere in that event is never duplicated. Grouping is therefore free — a hook no longer needs its own group object (the old jq merge deduped whole groups by their first command, which is why lab-scope.sh used to sit alone; that workaround is gone). Hook command dirs use the literal 'HOOKS_DIR/' placeholder; agent-harness.py rewrites each to $HOME/.claude/hooks at install time, so this fragment is host-agnostic.",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -13,11 +13,7 @@
             "type": "command",
             "command": "HOOKS_DIR/memory-review-offer.sh",
             "timeout": 3
-          }
-        ]
-      },
-      {
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "HOOKS_DIR/lab-scope.sh",

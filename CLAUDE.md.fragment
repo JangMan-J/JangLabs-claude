@@ -1,6 +1,6 @@
 # --- begin Claude-Lab harness fragment ---
-# Managed by this checkout's install.sh (absolute path rewritten on install).
-# To regenerate: edit claude/CLAUDE.md.fragment and re-run install.sh --apply.
+# Managed by this checkout's agent-harness.py (absolute path rewritten on install).
+# To regenerate: edit claude/CLAUDE.md.fragment and re-run ./agent-harness.py install --apply.
 
 ## System environment (live values come from the per-turn fingerprint)
 
