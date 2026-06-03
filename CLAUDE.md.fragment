@@ -39,7 +39,7 @@ Recall is **tag/tool-evidence routed** (the controlled `_tags.md` vocabulary + p
 
 ## Memory placement (stores are launch-dir-keyed, not topic-keyed)
 
-Claude Code keys each memory store to the launch directory, so the "active" store is frequently the wrong home for a fact. When **saving** a memory, route by SUBJECT, not cwd: durable box facts and box-general lessons (hardware, GPU/kernel/boot, desktop/KDE, shell, networking, git idioms) belong in the **box-brain store** — write the file under `~/.claude/projects/<$HOME with each '/' replaced by '-'>/memory/` (the store keyed to your home dir) and add its one-line entry to *that* `MEMORY.md`, not the active project's. Reserve a project's own store for lessons specific to that project's code or scope. Memory Roulette reviews the box-brain store.
+Claude Code keys each memory store to the launch directory, so the "active" store is frequently the wrong home for a fact. When **saving** a memory, route by SUBJECT, not cwd: durable box facts and box-general lessons (hardware, GPU/kernel/boot, desktop/KDE, shell, networking, git idioms) belong in the **box-brain store** — write the file under `~/.claude/projects/<$HOME with each '/' replaced by '-'>/memory/` (the store keyed to your home dir, NOT the active project's). The recall hook surfaces it by its `_tags.md` tags, so a new memory does NOT get a `MEMORY.md` line by default — `MEMORY.md` there is a curated **router** of the ~dozen always-relevant entries, not a per-memory index; add a router line ONLY if the memory is genuinely top-tier and always-relevant (and keep the router short). Reserve a project's own store for lessons specific to that project's code or scope. Memory Roulette reviews the box-brain store.
 
 **Tag every box-brain memory you save.** Add a `tags:` line nested under `metadata:`, drawn ONLY from the vocabulary in that store's `_tags.md` (one or two domain tags, any central tool, plus — for `[Method]`/`[Fumble]` entries — a method-pattern; ≤8 total). If nothing in `_tags.md` fits, add the new tag to `_tags.md` first — never coin an ad-hoc tag inline.
 
@@ -51,10 +51,10 @@ For type-checked languages (Python, C/C++, TypeScript, Rust), the relevant LSP p
 
 After completing a non-trivial task, if either of the following is true, **save a feedback memory before ending the turn**:
 
-- **`[Method]`** — A non-default approach surpassed the default, in a way that would benefit future sessions. Name the file `method-<kebab-slug>` and give its `MEMORY.md` index entry a `[Method]` title prefix; include **Why** + **How to apply**.
-- **`[Fumble]`** — A default Claude behavior was likely to mislead and you caught it (or it tripped you and you recovered). Name the file `fumble-<kebab-slug>` and give its `MEMORY.md` index entry a `[Fumble]` title prefix; include **What happens by default** + **Better path** + **How to spot it ahead of time**.
+- **`[Method]`** — A non-default approach surpassed the default, in a way that would benefit future sessions. Name the file `method-<kebab-slug>`; if it earns a `MEMORY.md` router line, prefix that line `[Method]`; include **Why** + **How to apply**.
+- **`[Fumble]`** — A default Claude behavior was likely to mislead and you caught it (or it tripped you and you recovered). Name the file `fumble-<kebab-slug>`; if it earns a `MEMORY.md` router line, prefix that line `[Fumble]`; include **What happens by default** + **Better path** + **How to spot it ahead of time**.
 
-The `[Method]`/`[Fumble]` title prefixes make `MEMORY.md` scannable as a patterns/antipatterns library. Keep the YAML `name:` a plain kebab slug — NEVER `name: [Fumble] …` (unquoted brackets are invalid YAML). Do not write `[Method]`/`[Fumble]` memories speculatively — only when a real session showed the win or the trip.
+The `[Method]`/`[Fumble]` title prefixes keep the listed router entries scannable as a patterns/antipatterns library. Keep the YAML `name:` a plain kebab slug — NEVER `name: [Fumble] …` (unquoted brackets are invalid YAML). Do not write `[Method]`/`[Fumble]` memories speculatively — only when a real session showed the win or the trip.
 
 ## Hook-aware editing
 
