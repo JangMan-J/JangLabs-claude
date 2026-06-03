@@ -74,3 +74,61 @@ system. See `handoffs/2026-06-01-memory-surfacing-build-plan.md` for the plan.
   `<store>/.surface-disabled` to disable every memory hook instantly.
 - Hook files must be committed **mode 100755** (`git add --chmod=+x`); a 644 checkout strips
   the exec bit (`core.fileMode=false` here ignores fs mode). See the installer-rename commit.
+
+## Base + scoped memory environment (the SessionStart base floor, 2026-06-03)
+
+**The seam.** Claude Code keys each memory store to the **git-repo root** of the launch dir
+(or the cwd itself outside a repo) and auto-loads only *that one* store's `MEMORY.md` (first
+200 lines / 25 KB). There is **no native global/user memory layer** (verified via the
+claude-code-guide docs pass). So the box-brain router — the curated always-relevant floor —
+is natively loaded ONLY when the active repo *is* `$HOME`. In any project/lab session the
+active store is a *different* (and usually **empty**) store, and the box-brain dozen reach
+Claude only through evidence-gated recall, which by design can miss always-on facts that have
+no per-tool-call trigger (e.g. the LIMINE-not-systemd-boot correction the fingerprint
+contradicts every turn).
+
+**The fix.** `memory-base-floor.sh` (a `SessionStart` hook) injects the box-brain `MEMORY.md`
+router as `additionalContext` for every session **whose active store is not box-brain**,
+giving a **base + scoped** model that mirrors `~/.claude/CLAUDE.md` (global) + `<repo>/CLAUDE.md`
+(scoped). It stays silent when launched at `$HOME` (native load already covers it — no
+double-load). SessionStart re-fires on startup/resume/clear/compact, so the floor self-heals
+after a compaction.
+
+- **Gate by construction.** It resolves `git -C cwd rev-parse --show-toplevel || cwd` and
+  SKIPS iff that equals `$HOME` — i.e. it replicates Claude Code's *own* keying, so it skips
+  precisely when the native load covers box-brain. `cwd` unknown ⇒ fall through to **inject**:
+  missing-floor (the seam re-opening) is the costly direction; a stray double-load is cosmetic.
+- **Efficiency adaptation.** The floor is *exactly the curated router* (single-sourced by
+  reading the live `MEMORY.md`), never the catalog — the long tail stays demand-paged by
+  `memory-recall.sh`. "Base = small always-loaded index; catalog = lazy" is the ToolSearch
+  transposition, now delivered to *every* session rather than only home-launched ones.
+- **Delivery contract.** `SessionStart` additionalContext schema is
+  `{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"..."}}` (NOT the
+  PreToolUse/UserPromptSubmit shapes). Wrapped in a `<base-memory-floor store="...">` block
+  whose `store` attribute carries the box-brain path so the router's relative links resolve.
+
+**Adversarial review (2026-06-03), 4 lenses → synthesis, fixes pinned with regression tests:**
+
+1. **MEDIUM — `realpath -m` resolved symlinks in the gate's `canon()`** → a symlinked cwd (or
+   symlinked `$HOME`) collapses two distinct literal store keys and makes the gate **wrongly
+   SKIP, dropping the floor** (MISSING-FLOOR). Fixed to `realpath -sm` (lexical), matching the
+   sibling `memory-recall.sh` and §3 above. Latent on this box (`$HOME` not a symlink), live on
+   any symlinked-home / bind-mounted-home box. Differential-proven: `-sm` injects, `-m` drops.
+   Pinned: `test_symlinked_cwd_still_injects`.
+2. **LOW — a router line containing `</base-memory-floor>` forged an early close.** Scrubbed by
+   neutralizing the tag *name* (`base-memory-floor`→`base-memory_floor`) in the body before
+   wrapping (no `/` ⇒ no bash pattern-escaping footgun). Parity with recall's
+   `mode="required"→"advisory"` defensive rewrite. Pinned: `test_delimiter_in_router_neutralized`.
+
+   Ten further findings (unguarded `tr`/`cat` stderr, `store=` attr escaping, 25 KB-vs-200-line
+   fidelity, no-cwd/no-PWD double-load, floor+recall double-surface) were adjudicated **rejected**
+   as NIT/unreachable/benign — including the reviewer's own belt-and-suspenders "uncertain ⇒
+   skip" fallback, which is the *wrong* direction for this hook (it trades a cosmetic double-load
+   for a costly missing-floor), so "uncertain ⇒ inject" was kept deliberately.
+
+**Meta-lesson (worth more than the fix).** The `-m`/`-sm` defect is a *recurrence* of §3 and of
+[[fumble-unverified-agent-cli-fix]] — a lesson already in the box-brain store. It recurred
+**because** the floor carrying that warning was not loaded in this project-dir session: the
+exact gap this hook closes. Once the floor is live, that warning is in context from
+SessionStart, and the class of mistake it documents is far less likely. The feature's value was
+demonstrated by the bug its own absence permitted.

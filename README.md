@@ -1,6 +1,6 @@
 # claude
 
-A Claude Code harness for this box. Seven hook scripts + a CLAUDE.md fragment + a settings.json fragment, installed globally to `~/.claude/`. Designed to be cheap per turn, narrow in scope, and easy to remove.
+A Claude Code harness for this box. A dozen hook scripts + a CLAUDE.md fragment + a settings.json fragment, installed globally to `~/.claude/`. Designed to be cheap per turn, narrow in scope, and easy to remove.
 
 ## What it does
 
@@ -13,8 +13,24 @@ A Claude Code harness for this box. Seven hook scripts + a CLAUDE.md fragment + 
 | Secret-write block | `forbidden-files-guard.sh` blocks writes to `.env`, `*.key`, `*.pem`, `~/.ssh/`, `~/.gnupg/` | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
 | Config drift block | `config-drift-guard.sh` rejects settings.json edits that introduce `disableAllHooks` / `bypassPermissions` / silent `defaultMode` shifts | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
 | Memory upkeep | `memory-review-offer.sh` surfaces a "Memory Roulette" review round for an overdue `~/.claude` memory (spawns the Python engine), capped at one offer per local day | `UserPromptSubmit` | ≤1 python spawn/day, no-op otherwise |
+| Memory base layer | `memory-base-floor.sh` injects the box-brain `MEMORY.md` router (the curated always-relevant floor) into every session whose active store isn't box-brain, so the floor is present regardless of cwd — the *base* of a base+scoped memory env | `SessionStart` | 1 read+jq at session start; silent at `$HOME` |
 
 A CLAUDE.md fragment adds: a verify-before-act rule, a memory-consultation rule, a `[Method]`/`[Fumble]` reflection-trigger rule for knowledge accretion, and an LSP-trust rule.
+
+### Memory surfacing subsystem
+
+A tag-routed memory system (the "ToolSearch pattern transposed to memories") layers on top of the box-brain store. It is **base + scoped**, mirroring how `~/.claude/CLAUDE.md` (global) + `<repo>/CLAUDE.md` (scoped) stack — because Claude Code keys each memory store to the **git-repo root** and auto-loads only that one store's `MEMORY.md`:
+
+| Hook / part | Event | Role |
+|---|---|---|
+| `memory-base-floor.sh` | `SessionStart` | **Base layer** — inject the box-brain `MEMORY.md` router into every session whose active store isn't box-brain; silent (no double-load) when launched at `$HOME`. Re-fires on compact. |
+| *(native)* `<repo>/memory/MEMORY.md` | startup | **Scoped layer** — the active repo's own store, auto-loaded by Claude Code, adds atop the floor. |
+| `memory-recall.sh` | `PreToolUse` | **Demand-paging** — advisory `<memory-recall>` block of tag/tool-evidence-routed matches before a tool call; never denies, fails open, dedups ~15 min. |
+| `memory-write-context.sh` / `memory-write-guard.sh` | `PreToolUse` | On writes to the store: surface write-time context, and validate tags against `_tags.md` (taxonomy writes fail **closed**). |
+| `memory-catalog-refresh.sh` | `PostToolUse` | Rebuild `_memory_catalog.json` after a memory write. |
+| `lib/memory_surface.py` | — | The engine: token extraction, semantic-graph canonicalization (`_tags.md` + `_tag_links.md`), ranking, catalog build, router validation. |
+
+See `findings/memory-surfacing.md` and `handoffs/2026-06-01-memory-surfacing-build-plan.md` for the design.
 
 ## What it deliberately does NOT do
 
@@ -59,6 +75,13 @@ stays the user's.
 | `hooks/forbidden-files-guard.sh` | PreToolUse(Edit/Write) — block secret-path writes |
 | `hooks/config-drift-guard.sh` | PreToolUse(Edit/Write) — block settings weakening |
 | `hooks/memory-review-offer.sh` | UserPromptSubmit — offer a Memory Roulette round for an overdue memory, ≤1×/day |
+| `hooks/memory-base-floor.sh` | SessionStart — inject the box-brain MEMORY.md router as a base memory floor when the active store isn't box-brain; silent at `$HOME` |
+| `hooks/memory-recall.sh` | PreToolUse — advisory tag-routed memory recall before a tool call; never denies, fails open |
+| `hooks/memory-write-context.sh` | PreToolUse — surface context on writes to the memory store |
+| `hooks/memory-write-guard.sh` | PreToolUse — validate memory/taxonomy writes (tags vs `_tags.md`); taxonomy fails closed |
+| `hooks/memory-catalog-refresh.sh` | PostToolUse — rebuild `_memory_catalog.json` after a memory write |
+| `lib/memory_surface.py` | Memory-surfacing engine (token extraction, ranking, catalog build, router validation) |
+| `memory/_tags.md`, `memory/_tag_links.md` | Tag vocabulary + semantic graph; symlinked into the box-brain store |
 | `CLAUDE.md.fragment` | Appended to `~/.claude/CLAUDE.md` between sentinels |
 | `settings.global.fragment.json` | Merged into `~/.claude/settings.json` (hooks only) |
 | `memory/_review_game.py` | Memory Roulette engine; symlinked into the box-brain memory store by agent-harness.py (self-locates its store from `$HOME`) |

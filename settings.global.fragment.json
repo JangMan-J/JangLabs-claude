@@ -95,6 +95,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HOOKS_DIR/memory-base-floor.sh",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }
