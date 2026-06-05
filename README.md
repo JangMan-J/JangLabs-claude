@@ -64,6 +64,12 @@ added into an existing matcher block, and a command already registered is never
 duplicated. Only the `hooks` block of `settings.json` is ever touched — `permissions`
 stays the user's.
 
+To disable **only** the base memory floor (not the whole harness, not every memory
+hook), run `./fix-memory-plug.sh` — a narrow, reversible break-glass that removes just
+the `memory-base-floor.sh` SessionStart entry and its symlink (`-n` to dry-run first).
+Re-enable with `./agent-harness.py install --apply`. This is narrower than
+`remove` (whole harness) and the `.surface-disabled` kill-switch (all memory hooks).
+
 ## Files
 
 | File | Role |
@@ -86,6 +92,7 @@ stays the user's.
 | `settings.global.fragment.json` | Merged into `~/.claude/settings.json` (hooks only) |
 | `memory/_review_game.py` | Memory Roulette engine; symlinked into the box-brain memory store by agent-harness.py (self-locates its store from `$HOME`) |
 | `agent-harness.py` | Idempotent install / remove / status CLI (dry-run by default; supersedes the former `install.sh`+`uninstall.sh`) |
+| `fix-memory-plug.sh` | Break-glass: unplug ONLY the `memory-base-floor.sh` SessionStart hook (and its symlink) from `settings.json`, leaving every other hook and all permissions intact. Idempotent; `--dry-run`/`--help`; re-enable via `agent-harness.py install --apply` |
 
 ## Iteration
 
