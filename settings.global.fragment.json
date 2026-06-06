@@ -103,6 +103,11 @@
             "type": "command",
             "command": "HOOKS_DIR/memory-base-floor.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "HOOKS_DIR/handoff-index.sh",
+            "timeout": 5
           }
         ]
       }
