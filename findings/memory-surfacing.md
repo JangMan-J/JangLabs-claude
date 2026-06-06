@@ -132,3 +132,36 @@ after a compaction.
 exact gap this hook closes. Once the floor is live, that warning is in context from
 SessionStart, and the class of mistake it documents is far less likely. The feature's value was
 demonstrated by the bug its own absence permitted.
+
+## ⚠️ ACTIVE TODO — the live-store infra symlinks are ABSOLUTE (flagged 2026-06-06)
+
+**Read this if you're working on the memory system here.** The live box-brain store does not
+hold its own taxonomy/scaffolding — it **symlinks into THIS lab**:
+
+```
+~/.claude/projects/-home-jangmanj/memory/_tags.md        -> /home/jangmanj/JangLabs/claude/memory/_tags.md
+~/.claude/projects/-home-jangmanj/memory/_tag_links.md   -> /home/jangmanj/JangLabs/claude/memory/_tag_links.md
+~/.claude/projects/-home-jangmanj/memory/_review_game.py -> /home/jangmanj/JangLabs/claude/memory/_review_game.py
+```
+
+So this lab IS the source-of-truth for the recall taxonomy (`_tags.md`), the semantic graph
+(`_tag_links.md`), and Memory Roulette (`_review_game.py`). Confirmed `diff`-identical 2026-06-06;
+the per-entry memories (108 live) are NOT mirrored here — only these 3 infra files are shared.
+
+**The fragility:** all three links are **absolute** (`/home/jangmanj/JangLabs/...`), which violates
+this box's portable-by-default / relative-symlink rule. If `JangLabs` is ever moved or renamed, or
+the submodule isn't checked out, these go **dangling** → tag-routed recall (`memory-recall.sh`) and
+the review game silently break, even though the 108 per-entry memories survive. The `realpath -sm`
+(lexical, no-resolve) canonicalization in §3 and the 2026-06-03 review depends on these being
+symlinks-into-the-lab — but says nothing about their being absolute.
+
+**The fix when you next touch this:** convert to relative from the store dir —
+`../../../../JangLabs/claude/memory/<f>` (both trees are under `/home/jangmanj/`, so a relative
+link survives a `$HOME`-internal move). Targets are unchanged, so nothing else breaks. Recreate with
+`ln -sfn` from `~/.claude/projects/-home-jangmanj/memory/`. Deferred deliberately (2026-06-06):
+the absolute links work as-is while the checkout stays at `/home/jangmanj/JangLabs` — this is a
+robustness upgrade, not a live breakage.
+
+**Also note (resolved 2026-06-06):** the lab's `.gitignore` now ignores `memory/*.md` and
+un-ignores `memory/_*.md`, so the per-entry memories don't churn git while the 3 infra files
+(the symlink targets above) stay versioned. `_review_game.py` is `.py`, untouched by the rule.
