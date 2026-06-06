@@ -10,3 +10,8 @@ __pycache__/
 *.swp
 *~
 .DS_Store
+
+# Memory store: per-entry memories are local-only; keep the infra scaffolding tracked.
+# (_tags.md, _tag_links.md = underscore-prefixed infra; _review_game.py is .py, untouched.)
+memory/*.md
+!memory/_*.md
