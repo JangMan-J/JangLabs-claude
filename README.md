@@ -6,7 +6,7 @@ A Claude Code harness for this box. A dozen hook scripts + a CLAUDE.md fragment 
 
 | Layer | Mechanism | Hook event | Cost per turn |
 |-------|-----------|------------|---------------|
-| Input grounding | `system-fingerprint.sh` injects 9 lines of immutable box facts (kernel, pacman/yay, systemd-boot, NVIDIA, etc.) | `UserPromptSubmit` | ~5ms cached |
+| Input grounding | `system-fingerprint.sh` injects 9 lines of immutable box facts (kernel, pacman/paru, Limine, NVIDIA, etc.) | `UserPromptSubmit` | ~5ms cached |
 | Workspace scoping | `lab-scope.sh` detects which lab of a `.claude-workspace`-marked tree (e.g. `~/JangLabs`) the cwd is in and injects a scope banner — only when the lab changes; silent elsewhere | `UserPromptSubmit` | ~5ms, no-op off-workspace |
 | Pre-emptive redirection | `bash-idiom-guard.sh` blocks `apt`/`yum`/`grub-*`/`service` etc. with a corrective message | `PreToolUse` (Bash) | ~5ms when fires |
 | Output verification | `syntax-check-touched.sh` runs `jq empty` / `python -c ast.parse` / `bash -n` etc. on touched files | `PostToolUse` (Edit/Write/MultiEdit) | 10–100ms when fires |

@@ -21,7 +21,7 @@ if match '(^|[;&|]\s*)(yum|dnf)\s+'; then
 fi
 
 if match '(^|[;&|]\s*)grub-(install|mkconfig)'; then
-  echo "bash-idiom-guard: this box uses systemd-boot, not GRUB. Use 'bootctl' / 'kernel-install' / edit '/boot/loader/entries/'. See archinstall_quirks.md." >&2
+  echo "bash-idiom-guard: this box boots via Limine, not GRUB. Regen initramfs with 'sudo limine-mkinitcpio' (NOT 'mkinitcpio -P', which is a no-op here). Verify the boot chain live before touching it (bootctl status, findmnt /boot)." >&2
   exit 2
 fi
 
@@ -31,7 +31,7 @@ if match '(^|[;&|]\s*)service\s+\S+\s+(start|stop|restart|status|reload)'; then
 fi
 
 if match '(^|[;&|]\s*)update-grub\b'; then
-  echo "bash-idiom-guard: 'update-grub' is Debian-only. systemd-boot updates via 'bootctl update' (rarely needed) or 'kernel-install' on kernel install." >&2
+  echo "bash-idiom-guard: 'update-grub' is Debian-only. This box boots via Limine — regen the initramfs with 'sudo limine-mkinitcpio'. The loader config is managed by Limine, not a GRUB-style regen." >&2
   exit 2
 fi
 
