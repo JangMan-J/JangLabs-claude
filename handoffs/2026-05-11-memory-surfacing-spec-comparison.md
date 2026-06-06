@@ -1,5 +1,7 @@
 # Memory surfacing spec comparison
 
+<!-- handoff-scope: claude -->
+
 **Status:** Lightweight arbiter comparison.  
 **Created:** 2026-05-11.  
 **Previous spec:** `2026-05-11-memory-surfacing-implementation-spec.md`.  

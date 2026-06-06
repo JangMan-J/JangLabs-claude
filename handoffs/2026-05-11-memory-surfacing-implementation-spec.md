@@ -1,5 +1,7 @@
 # Memory surfacing implementation specification
 
+<!-- handoff-scope: claude -->
+
 **Status:** Implementation spec v1, reviewed by independent Claude and Codex agents.  
 **Created:** 2026-05-11.  
 **Source overview:** `Claude-Lab/handoffs/2026-05-10-memory-system-overhaul.md`.  

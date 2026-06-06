@@ -1,5 +1,7 @@
 # Memory system overhaul — rough draft
 
+<!-- handoff-scope: claude -->
+
 **Status:** Draft. Captured from a session conversation on 2026-05-10. Not a spec — a faithful record of the design discussion, decision space, and open questions. Edit deliberately; do not casually rewrite.
 
 **Scope:** The `~/.claude/projects/-home-jangman/memory/` system. Specifically: how memories get *surfaced* (retrieval), how they get *kept fresh* (already partially solved — see anchors at bottom), and how the system can grow without eroding Claude's effective context.

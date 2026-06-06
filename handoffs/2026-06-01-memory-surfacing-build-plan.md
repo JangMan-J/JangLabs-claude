@@ -1,5 +1,7 @@
 # Memory surfacing — autonomous build plan + progress (Phases 1–3)
 
+<!-- handoff-scope: claude -->
+
 **Status:** IN PROGRESS (autonomous `/goal`, started 2026-06-01). Phase 1 *engine + taxonomy data*
 DONE; Phase 1 *hooks + settings + tests* DONE (2026-06-02) — built, registered, adversarially reviewed
 (all findings fixed), 40 tests pass; **deploy posture = build-but-leave-off** (registered in the fragment

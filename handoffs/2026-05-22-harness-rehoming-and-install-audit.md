@@ -1,5 +1,7 @@
 # Claude-Lab harness — re-homing after the home-dir migration + install.sh audit
 
+<!-- handoff-scope: claude -->
+
 **Status:** Faithful record of a working session on 2026-05-22. The harness was reinstalled to the new global `~/.claude/` and `install.sh` was made host-agnostic; this documents the package as it now stands, what was fixed, and what still carries stale paths.
 
 **Audience:** A future session (Claude or human) picking this up cold. Assume nothing about the box except what the per-turn `<system-fingerprint>` block reports.

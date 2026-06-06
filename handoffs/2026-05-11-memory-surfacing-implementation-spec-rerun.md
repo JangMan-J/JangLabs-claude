@@ -1,5 +1,7 @@
 # Memory surfacing implementation specification - rerun
 
+<!-- handoff-scope: claude -->
+
 **Status:** Implementation spec v2 candidate from arbiter rerun.  
 **Created:** 2026-05-11.  
 **Source overview:** `Claude-Lab/handoffs/2026-05-10-memory-system-overhaul.md`.  

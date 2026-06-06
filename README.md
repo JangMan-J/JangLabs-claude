@@ -14,7 +14,7 @@ A Claude Code harness for this box. A dozen hook scripts + a CLAUDE.md fragment 
 | Config drift block | `config-drift-guard.sh` rejects settings.json edits that introduce `disableAllHooks` / `bypassPermissions` / silent `defaultMode` shifts | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
 | Memory upkeep | `memory-review-offer.sh` surfaces a "Memory Roulette" review round for an overdue `~/.claude` memory (spawns the Python engine), capped at one offer per local day | `UserPromptSubmit` | ≤1 python spawn/day, no-op otherwise |
 | Memory base layer | `memory-base-floor.sh` injects the box-brain `MEMORY.md` router (the curated always-relevant floor) into every session whose active store isn't box-brain, so the floor is present regardless of cwd — the *base* of a base+scoped memory env | `SessionStart` | 1 read+jq at session start; silent at `$HOME` |
-| Handoff discovery | `handoff-index.sh` regenerates `<workspace>/.handoff_index` — a filename → real-path map of every handoff across the labs' `.claude/handoffs/`, the tracked `claude/handoffs/` archive, and `~/.claude/handoffs/` — so the cwd-scattered handoffs stay discoverable from one root file | `SessionStart` | 1 `find` sweep at session start; no-op off-workspace |
+| Handoff discovery | `handoff-index.sh` regenerates `<workspace>/.handoff_index` — every handoff across the labs' `.claude/handoffs/`, the tracked `claude/handoffs/` archive, and `~/.claude/handoffs/`, **grouped by scope** (cross-lab / per-lab / box / stale) read from each file's `<!-- handoff-scope: X -->` tag, path-inferred when untagged | `SessionStart` | 1 `find`+`grep` sweep at session start; no-op off-workspace |
 
 A CLAUDE.md fragment adds: a verify-before-act rule, a memory-consultation rule, a `[Method]`/`[Fumble]` reflection-trigger rule for knowledge accretion, and an LSP-trust rule.
 
@@ -83,7 +83,7 @@ Re-enable with `./agent-harness.py install --apply`. This is narrower than
 | `hooks/config-drift-guard.sh` | PreToolUse(Edit/Write) — block settings weakening |
 | `hooks/memory-review-offer.sh` | UserPromptSubmit — offer a Memory Roulette round for an overdue memory, ≤1×/day |
 | `hooks/memory-base-floor.sh` | SessionStart — inject the box-brain MEMORY.md router as a base memory floor when the active store isn't box-brain; silent at `$HOME` |
-| `hooks/handoff-index.sh` | SessionStart — regenerate `<workspace>/.handoff_index` (filename → real-path map of all handoffs across labs + `~/.claude/handoffs/`); silent off a `.claude-workspace`-marked tree |
+| `hooks/handoff-index.sh` | SessionStart — regenerate `<workspace>/.handoff_index` (all handoffs across labs + `~/.claude/handoffs/`, grouped by scope from each file's `<!-- handoff-scope: X -->` tag, path-inferred when untagged); silent off a `.claude-workspace`-marked tree |
 | `hooks/memory-recall.sh` | PreToolUse — advisory tag-routed memory recall before a tool call; never denies, fails open |
 | `hooks/memory-write-context.sh` | PreToolUse — surface context on writes to the memory store |
 | `hooks/memory-write-guard.sh` | PreToolUse — validate memory/taxonomy writes (tags vs `_tags.md`); taxonomy fails closed |
